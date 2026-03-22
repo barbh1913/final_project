@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # מש"ב – Military Scheduling Frontend Prototype
 
 פרויקט React מוכן לאב טיפוס של מערכת שיבוץ ביטחונית.
@@ -36,3 +37,7 @@ npm run dev
 - להוסיף אימות משתמשים
 - להוסיף לוגיקת שיבוץ מלאה
 - להוסיף גרפים אמיתיים בדוחות
+=======
+# final_project
+final_project
+>>>>>>> 6aa9b32fa71903cc93f6e97a66cd883859805c69
