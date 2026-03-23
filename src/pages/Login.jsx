@@ -11,8 +11,7 @@ function Login() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleLogin}>
-        <h1>כניסה למערכת מש"ב</h1>
-        <p>אב טיפוס של צד משתמש לניהול שיבוצי מילואים וזמינות.</p>
+        <h1>כניסה למערכת המילואימניקים</h1>
 
         <label>
           מספר אישי / תעודת זהות
@@ -24,16 +23,7 @@ function Login() {
           <input type="password" placeholder="הקלידי סיסמה" required />
         </label>
 
-        <label>
-          סוג משתמש
-          <select defaultValue="מפקד">
-            <option>מילואימניק</option>
-            <option>מפקד</option>
-            <option>שלישות</option>
-            <option>פיקוד בכיר</option>
-          </select>
-        </label>
-
+        
         <button type="submit">התחברות</button>
       </form>
     </div>

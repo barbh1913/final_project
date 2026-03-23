@@ -6,7 +6,6 @@ function Profile() {
     <section>
       <PageHeader
         title="פרופיל משתמש"
-        subtitle="עדכון פרטים אישיים ותצוגת מידע בסיסי על המשתמש המחובר."
       />
 
       <div className="card profile-grid">
@@ -15,6 +14,7 @@ function Profile() {
         <div><strong>תפקיד:</strong> {currentUser.role}</div>
         <div><strong>יחידה:</strong> {currentUser.unit}</div>
         <div><strong>טלפון:</strong> {currentUser.phone}</div>
+        <div><strong>מייל:</strong> {currentUser.email}</div>
       </div>
     </section>
   );
