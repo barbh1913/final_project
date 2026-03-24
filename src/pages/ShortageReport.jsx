@@ -7,6 +7,8 @@ function ShortageReport() {
   const [assignments, setAssignments] = useState(allAssignments);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReport, setEditingReport] = useState(null);
+  
+  // States לטופס
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [position, setPosition] = useState('לוחם');
@@ -41,18 +43,20 @@ function ShortageReport() {
   };
 
   const handleSaveReport = () => {
+    // וולידציה פונקציונלית - שדות ריקים
     if (!fromDate || !toDate || !position || quantity < 1 || !reason.trim()) {
       alert('יש למלא את כל השדות: מתאריך, עד תאריך, תפקיד, כמות, סיבה');
       return;
     }
 
+    // וולידציה פונקציונלית - תקינות תאריכים
     if (new Date(fromDate) > new Date(toDate)) {
       alert('טווח תאריכים לא תקין: תאריך התחלה חייב להיות לפני סיום');
       return;
     }
 
     if (editingReport) {
-      // Edit existing report (only if pending)
+      // עדכון דיווח קיים
       setReports((prev) =>
         prev.map((r) =>
           r.id === editingReport.id
@@ -63,12 +67,13 @@ function ShortageReport() {
                 position,
                 quantity,
                 reason: reason.trim(),
+                status: 'ממתין לאישור' // החזרת סטטוס לבדיקה מחדש לאחר עריכה
               }
             : r
         )
       );
     } else {
-      // Add new report
+      // הוספת דיווח חדש
       const nextId = reports.length ? Math.max(...reports.map((r) => r.id)) + 1 : 1;
       setReports((prev) => [
         ...prev,
@@ -93,69 +98,38 @@ function ShortageReport() {
   const handleApprove = (reportId) => {
     if (!isManager) return;
 
+    // 1. עדכון סטטוס הדיווח בטבלה
+    let targetReport = null;
     setReports((prev) =>
-      prev.map((r) =>
-        r.id === reportId
-          ? {
-              ...r,
-              status: 'מאושר',
-              approvedBy: currentUser.name,
-              approvedAt: new Date().toISOString().split('T')[0],
-            }
-          : r
-      )
+      prev.map((r) => {
+        if (r.id === reportId) {
+          targetReport = { ...r, status: 'מאושר' };
+          return {
+            ...targetReport,
+            approvedBy: currentUser.name,
+            approvedAt: new Date().toISOString().split('T')[0],
+          };
+        }
+        return r;
+      })
     );
 
-    // Auto-create/update assignment
-    const report = reports.find((r) => r.id === reportId);
+    // 2. יצירת שיבוץ פונקציונלי חדש במערכת
+    const report = reports.find(r => r.id === reportId);
     if (report) {
-      // Find available soldiers for this position
-      const availableSoldiers = soldiers.filter(s =>
-        s.role === report.position &&
-        s.dates.some(date => date >= report.fromDate && date <= report.toDate)
-      );
+      const nextAssignmentId = assignments.length ? Math.max(...assignments.map((a) => a.id)) + 1 : 1;
+      
+      const newAssignment = {
+        id: nextAssignmentId,
+        fromDate: report.fromDate,
+        toDate: report.toDate,
+        position: report.position,
+        assigned: 'חסר', // נוצר כשיבוץ ריק לאיוש
+        status: 'חוסר'   // סטטוס שיגרום לזה להופיע בדשבורד כבעיה פתוחה
+      };
 
-      if (availableSoldiers.length > 0) {
-        // Update existing assignment with shortage status
-        const shortageAssignment = assignments.find(a =>
-          a.position === report.position &&
-          a.status === 'חוסר' &&
-          a.fromDate >= report.fromDate &&
-          a.toDate <= report.toDate
-        );
-
-        if (shortageAssignment) {
-          setAssignments((prev) =>
-            prev.map((a) =>
-              a.id === shortageAssignment.id
-                ? {
-                    ...a,
-                    assigned: availableSoldiers[0].name,
-                    status: 'מאושר',
-                  }
-                : a
-            )
-          );
-          alert(`שיבוץ נוצר אוטומטית: ${availableSoldiers[0].name} לתפקיד ${report.position} (${report.fromDate} - ${report.toDate})`);
-        } else {
-          // Create new assignment
-          const nextId = Math.max(...assignments.map((a) => a.id)) + 1;
-          setAssignments((prev) => [
-            ...prev,
-            {
-              id: nextId,
-              fromDate: report.fromDate,
-              toDate: report.toDate,
-              position: report.position,
-              assigned: availableSoldiers[0].name,
-              status: 'מאושר',
-            },
-          ]);
-          alert(`שיבוץ חדש נוצר: ${availableSoldiers[0].name} לתפקיד ${report.position} (${report.fromDate} - ${report.toDate})`);
-        }
-      } else {
-        alert(`אין מילואימניקים זמינים לתפקיד ${report.position} בתאריכים ${report.fromDate} - ${report.toDate}`);
-      }
+      setAssignments((prev) => [...prev, newAssignment]);
+      alert(`הדיווח אושר. נוצר שיבוץ חדש (ID: ${nextAssignmentId}) לתפקיד ${report.position}`);
     }
   };
 
@@ -182,14 +156,10 @@ function ShortageReport() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'ממתין לאישור':
-        return '#ffa500';
-      case 'מאושר':
-        return '#28a745';
-      case 'נדחה':
-        return '#dc3545';
-      default:
-        return '#6c757d';
+      case 'ממתין לאישור': return '#ffa500';
+      case 'מאושר': return '#28a745';
+      case 'נדחה': return '#dc3545';
+      default: return '#6c757d';
     }
   };
 
@@ -205,7 +175,6 @@ function ShortageReport() {
         }
       />
 
-      {/* טבלת דיווחי מחסור */}
       <div>
         <h3>דיווחי מחסור</h3>
         <div className="card">

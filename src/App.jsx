@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useState } from 'react';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -10,11 +11,28 @@ import Profile from './pages/Profile';
 import ShortageReport from './pages/ShortageReport';
 import OpenAssignments from './pages/OpenAssignments';
 
+// ייבוא הנתונים הראשוניים
+import * as mock from './data/mockData';
+
 function App() {
+  // ניהול הסטייט המרכזי של האפליקציה
+  const [reports, setReports] = useState(mock.shortageReports);
+  const [assignments, setAssignments] = useState(mock.assignments);
+  const [applications, setApplications] = useState(mock.applications);
+
+  // אובייקט שמאגד את כל הנתונים והפונקציות לעדכון
+  const contextValue = {
+    reports, setReports,
+    assignments, setAssignments,
+    applications, setApplications,
+    soldiers: mock.soldiers,
+    currentUser: mock.currentUser
+  };
+
   return (
     <Routes>
       <Route path="/" element={<Login />} />
-      <Route element={<Layout />}>
+      <Route element={<Layout context={contextValue} />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/assignments" element={<Assignments />} />
         <Route path="/assignment-builder" element={<AssignmentBuilder />} />

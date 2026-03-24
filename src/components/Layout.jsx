@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { currentUser } from '../data/mockData';
+// הסרנו את currentUser מה-mockData כי עכשיו הוא מגיע מה-Context ב-App
+import { currentUser as mockUser } from '../data/mockData'; 
 
 const baseLinks = [
   { to: '/dashboard', label: 'דשבורד' },
@@ -19,12 +20,16 @@ const soldierLinks = [
   { to: '/open-assignments', label: 'שיבוצים פתוחים' },
 ];
 
-function Layout() {
+// שים לב: הוספנו { context } בתוך הסוגריים כדי לקבל את הנתונים מ-App.jsx
+function Layout({ context }) {
   const navigate = useNavigate();
 
-  const isCommander = currentUser.role === 'מפקדת צוות' || currentUser.role === 'מפקד';
-  const isManager = currentUser.role === 'מנהל מערכת';
-  const isSoldier = currentUser.role === 'לוחם' || currentUser.role === 'נהג' || currentUser.role === 'חובש' || currentUser.role === 'מילואימניק';
+  // משתמשים ביוזר שמגיע מהקונטקסט (ואם הוא לא קיים, לוקחים מהמוק כגיבוי)
+  const user = context?.currentUser || mockUser;
+
+  const isCommander = user.role === 'מפקדת צוות' || user.role === 'מפקד';
+  const isManager = user.role === 'מנהל מערכת';
+  const isSoldier = user.role === 'לוחם' || user.role === 'נהג' || user.role === 'חובש' || user.role === 'מילואימניק';
 
   const links = [
     ...baseLinks,
@@ -33,7 +38,6 @@ function Layout() {
   ];
 
   const handleLogout = () => {
-    // אם יש צורך לנקות session או token אפשר לעשות פה
     navigate('/');
   };
 
@@ -54,13 +58,14 @@ function Layout() {
           ))}
         </nav>
 
-        <button className="logout-button" onClick={handleLogout} style={{ marginTop: '16px' }}>
+        <button className="logout-button" onClick={handleLogout} style={{ marginTop: 'auto' }}>
           התנתק
         </button>
       </aside>
 
       <main className="content-area">
-        <Outlet />
+        {/* השורה הקריטית: מעבירים את ה-context לתוך ה-Outlet */}
+        <Outlet context={context} />
       </main>
     </div>
   );
